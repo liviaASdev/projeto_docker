@@ -2,30 +2,36 @@ version: '3'
 
 services:
   myapp:
-    build: .
-    container_name: myapp
+    build:
+      context: . #onde vai buscar o arquivo para ser buildado
+      dockerfile: Dockerfile #nome do arquivo do tipo dockerfile
+    container_name: minha_aplicacao
     restart: always
     ports: 
-     - 8080:80
+      - 8080:80
     volumes: 
-     - ./html:/usr/share/nginx/html 
-
+      - ./html:/usr/share/nginx/html
+    depends_on:
+      - mysql
+    networks:
+      - laravel
 
   mysql:
     image: mysql:8
     container_name: mysql_livia
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: fullcycle
+      MYSQL_DATABASE: ${DB_DATABASE:-laravel}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-userpass}
+      MYSQL_USER: ${DB_USERNAME:-username}
     ports: 
       - 3306:3306
     volumes:
       - ./mysql:/var/lib/mysql
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    restart: always
-    ports:
-      - 5672:5672
-      - 15672:15672
+    networks:
+      - laravel
+
+networks:
+  laravel:
+      driver: bridge
